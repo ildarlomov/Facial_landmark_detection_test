@@ -37,8 +37,13 @@ def shape_to_np(shape, dtype="int"):
     return coords
 
 
+# fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+# fourcc = cv2.VideoWriter_fourcc(*'XVID')
+fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+out = cv2.VideoWriter('results/out.avi', fourcc, 20.0, (1280, 720))
+
 # camera = cv2.VideoCapture(0)
-camera = cv2.VideoCapture('data/video_file2.mp4')
+camera = cv2.VideoCapture('data/short.mp4')
 
 predictor_path = 'shape_predictor_68_face_landmarks.dat_2'
 
@@ -53,10 +58,10 @@ def vis_text(image, string, pos):
 FPS_INTERVAL = 5
 fps = FPS2(FPS_INTERVAL).start()
 while True:
-
+    # here some comment
     ret, frame = camera.read()
     if ret == False:
-        print('Failed to capture frame from camera. Check camera index in cv2.VideoCapture(0) \n')
+        print('Failed to capture another frame. Check camera index in cv2.VideoCapture(0) \n')
         break
 
     frame_grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -80,11 +85,16 @@ while True:
             cv2.rectangle(frame, (int(d.left()/ratio), int(d.top()/ratio)),(int(d.right()/ratio), int(d.bottom()/ratio)), (0, 255, 0), 1)
     vis_text(frame, "fps: {}".format(fps.fps_local()), (10, 30))
     # print('fps:', fps.fps_local())
+    # cv2.flip(frame, 180)
     cv2.imshow("image", frame)
     fps.update()
+    out.write(frame)
+    print('{width}:{height}'.format(width=camera.get(cv2.CAP_PROP_FRAME_WIDTH),
+                                    height=camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         fps.stop()
-        cv2.destroyAllWindows()
         camera.release()
+        out.release()
+        cv2.destroyAllWindows()
         break
